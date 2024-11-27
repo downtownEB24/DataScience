@@ -409,7 +409,7 @@ function preload() {
 
 /********* SET UP *********/
 function setup() {
-  createCanvas(500, 500);
+  const canvas = createCanvas(500, 500);
   canvas.parent('gameContainer'); // Attach the canvas to the #gameContainer div
   backgroundImage = new BackgroundImage(easyImg, mediumImg, hardImg);
   ball = new Ball(width / 2, height / 2, 20, color(0));
