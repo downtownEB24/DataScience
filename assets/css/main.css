@@ -184,6 +184,17 @@ input, select, textarea {
 	}
 
 /* Container */
+	#gameContainer input {
+		border: 2px solid gray;
+		border-radius: 5px;
+		padding: 5px;
+		font-family: Arial, sans-serif;
+  	}
+  
+  	#gameContainer input:focus {
+		border-color: yellow;
+		outline: none;
+  	}
 
 	.container {
 		margin: 0 auto;
@@ -2774,7 +2785,7 @@ input, select, textarea {
 /* Footer */
 
 	#footer {
-		padding: 4em 0 8em 0;
+		padding: 2em 0 0 0;
 	}
 
 		#footer a {
