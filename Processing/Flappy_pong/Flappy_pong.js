@@ -397,13 +397,13 @@ function wallAdder() {
 
 /********* PRELOAD IMAGES *********/
 function preload() {
-  easyImg = loadImage("GitHub/WebsitePortfolio/Processing/Flappy_pong/In_GamePicture.jpg");
-  mediumImg = loadImage("GitHub/WebsitePortfolio/Processing/Flappy_pong/In_GamePicture2.jpg");
-  hardImg = loadImage("GitHub/WebsitePortfolio/Processing/Flappy_pong/In_GamePicture3.jpg");
-  welcomeBackground = loadImage("GitHub/WebsitePortfolio/Processing/Flappy_pong/HomeScreen.jpg");
-  ScoreImage = loadImage("GitHub/WebsitePortfolio/Processing/Flappy_pong/Score_picture.png");
-  form_highScoreImg = loadImage("GitHub/WebsitePortfolio/Processing/Flappy_pong/form_highscore.jpg");
-  inGameFormImage = loadImage("GitHub/WebsitePortfolio/Processing/Flappy_pong/In_GameForm.jpg");
+  easyImg = loadImage("Processing/Flappy_pong/In_GamePicture.jpg");
+  mediumImg = loadImage("Processing/Flappy_pong/In_GamePicture2.jpg");
+  hardImg = loadImage("Processing/Flappy_pong/In_GamePicture3.jpg");
+  welcomeBackground = loadImage("Processing/Flappy_pong/HomeScreen.jpg");
+  ScoreImage = loadImage("Processing/Flappy_pong/Score_picture.png");
+  form_highScoreImg = loadImage("Processing/Flappy_pong/form_highscore.jpg");
+  inGameFormImage = loadImage("Processing/Flappy_pong/In_GameForm.jpg");
    console.log("Images loaded"); 
 }
 
