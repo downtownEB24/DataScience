@@ -185,34 +185,63 @@ input, select, textarea {
 	}
 
 /* Container */
-	#gameContainer{
-		width: 500px;
-		height: 500px;
-		overflow: hidden;
-		position: relative;
-	}
-
-	#gameContainer input {
-		border: 2px solid gray;
-		border-radius: 5px;
-		padding: 5px;
-		font-family: Arial, sans-serif;
-		background-color: #fff;
-  		color: #333;
-  	}
+	/* Container */
+#gameContainer {
+	width: 500px;
+	height: 500px;
+	overflow: hidden;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center; /* Center elements horizontally and vertically */
+	gap: 10px; /* Spacing between input fields */
+  }
   
-  	#gameContainer input:focus {
-		border-color: yellow;
-		outline: none;
-  	}
-
-	#gameContainer .error-message {
-		color: red;
-  		font-size: 12px;
-  		text-align: center;
-  		margin-top: 5px;
-  		z-index: 1000; /* Ensure it's above other elements */
-	  }
+  /* Input Fields */
+  #gameContainer input {
+	border: 2px solid gray;
+	border-radius: 5px;
+	padding: 10px;
+	font-family: Arial, sans-serif;
+	background-color: #fff;
+	color: #333;
+	width: 80%; /* Make inputs responsive within the container */
+	max-width: 300px; /* Optional: Set a maximum width for larger screens */
+	box-sizing: border-box; /* Include padding in width calculation */
+	text-align: center;
+  }
+  
+  /* Input Focus State */
+  #gameContainer input:focus {
+	border-color: yellow;
+	outline: none;
+	background-color: #ffffe0; /* Optional: Light yellow background on focus */
+  }
+  
+  /* Error Message */
+  #gameContainer .error-message {
+	color: red;
+	font-size: 12px;
+	text-align: center;
+	margin-top: 5px;
+	z-index: 1000; /* Ensure it's above other elements */
+	font-family: Arial, sans-serif;
+  }
+  
+  /* Adjust for responsive design */
+  @media (max-width: 600px) {
+	#gameContainer {
+	  width: 100%;
+	  height: auto;
+	  padding: 20px;
+	}
+  
+	#gameContainer input {
+	  width: 90%; /* Make inputs slightly wider on smaller screens */
+	}
+  }
+  
 
 	.container {
 		margin: 0 auto;
