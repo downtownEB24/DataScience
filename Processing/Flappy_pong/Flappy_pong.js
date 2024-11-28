@@ -430,9 +430,6 @@ function setup() {
   
   // Set up input debounce (if implemented)
   setupInputDebounce();
-
-  // Prevent unnecessary rendering until explicitly needed
-  noLoop();
 }
 
 
