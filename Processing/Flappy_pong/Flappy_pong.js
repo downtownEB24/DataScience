@@ -27,7 +27,6 @@ let playerPin = ""; // Stores the player's inputted PIN
 let activeField = "username"; // Keeps track of the currently active input field
 let fetchFailed = false; // Flag to track if the fetch has failed
 let gameOverTriggered = false; // New flag to track if game over has been triggered
-let resizeTimeout;
 
 const gravity = 0.3;
 const airfriction = 0.00001;
@@ -37,32 +36,6 @@ const raindrops = [];
 const windChangeInterval = 5000; // Wind changes every 5 seconds
 const weatherChangeInterval = 5000;
 const wallInterval = 1000;
-
-/******Global Image Resizing **********/
-window.addEventListener("resize", () => {
-  clearTimeout(resizeTimeout); // Debounce resize events
-  resizeTimeout = setTimeout(() => {
-    const usernameInput = document.getElementById("usernameInput");
-    const pinInput = document.getElementById("pinInput");
-
-    if (usernameInput && pinInput) {
-      // Re-center the inputs dynamically
-      const gameContainer = document.querySelector("#gameContainer");
-      if (!gameContainer) {
-        console.error("Game container not found!");
-        return;
-      }
-
-      // Ensure the container retains its responsiveness
-      usernameInput.style.width = "80%";
-      pinInput.style.width = "80%";
-
-      // Ensure the margin remains consistent for vertical centering
-      usernameInput.style.margin = "10px auto";
-      pinInput.style.margin = "10px auto";
-    }
-  }, 50); // Adjust debounce time as needed
-});
 
 /********* CLASS DEFINITIONS *********/
 class Ball {
@@ -486,21 +459,32 @@ function updateGame() {
   }
 }
 
+
 function setupInputDebounce() {
   let inputDebounceTimer;
 
   document.addEventListener("keydown", (event) => {
-    clearTimeout(inputDebounceTimer); // Reset timer
+    const usernameInput = document.getElementById("usernameInput");
+    const pinInput = document.getElementById("pinInput");
+
+    // Check if the active element is an input field
+    if (document.activeElement === usernameInput || document.activeElement === pinInput) {
+      // Let the input fields handle typing
+      return; 
+    }
+
+    // Debounce other game-related key inputs
+    clearTimeout(inputDebounceTimer); // Reset debounce timer
     inputDebounceTimer = setTimeout(() => {
-      if (event.key === 'r'){
-        resetGame();
+      if (event.key === 'r') {
+        resetGame(); // Reset game when 'R' is pressed
+      } else if (gameScreen === 3 && event.key === "Enter") {
+        submitTopScore(); // Submit score when 'Enter' is pressed
       }
-      else if (gameScreen === 3 && event.key === "Enter"){
-        submitTopScore();
-      }
-    }, 50); // Only handle the input after 50ms
+    }, 50); // Handle inputs after a 50ms debounce
   });
 }
+
 
 function draw() {
   clear(); // Clear the canvas before rendering the next frame
@@ -566,17 +550,21 @@ function displayErrorMessages() {
     const usernameErrorDiv = document.createElement("div");
     usernameErrorDiv.className = "error-message";
     usernameErrorDiv.textContent = usernameError;
+
+    // Style the error message
     usernameErrorDiv.style.position = "absolute";
     usernameErrorDiv.style.color = "red";
     usernameErrorDiv.style.fontWeight = "bold";
     usernameErrorDiv.style.fontSize = "14px";
     usernameErrorDiv.style.fontFamily = "Tahoma, Geneva, sans-serif";
-    usernameErrorDiv.style.left = `${usernameInput.offsetLeft}px`;
-    usernameErrorDiv.style.top = `${usernameInput.offsetTop + usernameInput.offsetHeight + 5}px`; // Just below input
-    
-    // Add shadow effect
     usernameErrorDiv.style.textShadow = "1px 1px 3px rgba(0, 0, 0, 0.5)";
-    gameContainer.appendChild(usernameErrorDiv);
+
+    // Position the error message using getBoundingClientRect()
+    const rect = usernameInput.getBoundingClientRect();
+    usernameErrorDiv.style.left = `${rect.left}px`;
+    usernameErrorDiv.style.top = `${rect.bottom + 5}px`; // Just below input
+
+    document.body.appendChild(usernameErrorDiv);
   }
 
   // Display PIN error
@@ -584,17 +572,21 @@ function displayErrorMessages() {
     const pinErrorDiv = document.createElement("div");
     pinErrorDiv.className = "error-message";
     pinErrorDiv.textContent = pinError;
+
+    // Style the error message
     pinErrorDiv.style.position = "absolute";
     pinErrorDiv.style.color = "red";
     pinErrorDiv.style.fontWeight = "bold";
     pinErrorDiv.style.fontSize = "14px";
     pinErrorDiv.style.fontFamily = "Tahoma, Geneva, sans-serif";
-    pinErrorDiv.style.left = `${pinInput.offsetLeft}px`;
-    pinErrorDiv.style.top = `${pinInput.offsetTop + pinInput.offsetHeight + 5}px`; // Just below input
-    
-    // Add shadow effect
     pinErrorDiv.style.textShadow = "1px 1px 3px rgba(0, 0, 0, 0.5)";
-    gameContainer.appendChild(pinErrorDiv);
+
+    // Position the error message using getBoundingClientRect()
+    const rect = pinInput.getBoundingClientRect();
+    pinErrorDiv.style.left = `${rect.left}px`;
+    pinErrorDiv.style.top = `${rect.bottom + 5}px`; // Just below input
+
+    document.body.appendChild(pinErrorDiv);
   }
 }
 
@@ -662,17 +654,17 @@ function displayTopScoresScreen() {
 
 
 function removeInputFields() {
+  console.log("Removing input fields");
   const usernameInput = document.getElementById("usernameInput");
   const pinInput = document.getElementById("pinInput");
 
+  // Remove input fields
   if (usernameInput) usernameInput.remove();
   if (pinInput) pinInput.remove();
 
-  const gameContainer = document.querySelector("#gameContainer");
-  if (gameContainer) {
-    const dynamicElements = gameContainer.querySelectorAll("div");
-    dynamicElements.forEach((el) => el.remove());
-  }
+  // Remove error messages
+  const existingErrors = document.querySelectorAll(".error-message");
+  existingErrors.forEach((error) => error.remove());
 }
 
 
@@ -766,24 +758,30 @@ function createInputFields() {
   const gameContainer = document.querySelector("#gameContainer");
 
   if (!gameContainer) {
-    console.error("Game container not found!");
-    return;
+      console.error("Game container not found!");
+      return;
   }
 
   // Remove existing input fields to prevent duplication
   removeInputFields();
+
+  const canvasRect = document.querySelector("canvas").getBoundingClientRect();
 
   // Username Input Field
   const usernameInput = document.createElement("input");
   usernameInput.type = "text";
   usernameInput.id = "usernameInput";
   usernameInput.placeholder = "Enter your username";
-  usernameInput.style.width = "80%"; // Relative width for responsiveness
-  usernameInput.style.margin = "10px auto"; // Center and add spacing
-  usernameInput.style.display = "block"; // Ensure block-level for centering
-  usernameInput.style.padding = "10px"; // Add padding for better visuals
-  usernameInput.style.borderRadius = "5px"; // Rounded corners
-  usernameInput.style.border = "2px solid gray"; // Default border
+  usernameInput.style.position = "absolute";
+  usernameInput.style.left = `${canvasRect.left + canvasRect.width / 2 - 100}px`;
+  usernameInput.style.top = `${canvasRect.top + canvasRect.height / 2 - 100}px`;
+  usernameInput.style.width = "200px";
+  usernameInput.style.textAlign = "center";
+  usernameInput.style.padding = "10px";
+  usernameInput.style.borderRadius = "5px";
+  usernameInput.style.border = "2px solid gray";
+  usernameInput.style.fontSize = "16px";
+  usernameInput.style.boxShadow = "2px 2px 5px rgba(0, 0, 0, 0.3)";
   gameContainer.appendChild(usernameInput);
 
   // PIN Input Field
@@ -791,19 +789,23 @@ function createInputFields() {
   pinInput.type = "password";
   pinInput.id = "pinInput";
   pinInput.placeholder = "Enter your PIN";
-  pinInput.style.width = "80%"; // Relative width for responsiveness
-  pinInput.style.margin = "10px auto"; // Center and add spacing
-  pinInput.style.display = "block"; // Ensure block-level for centering
-  pinInput.style.padding = "10px"; // Add padding for better visuals
-  pinInput.style.borderRadius = "5px"; // Rounded corners
-  pinInput.style.border = "2px solid gray"; // Default border
+  pinInput.style.position = "absolute";
+  pinInput.style.left = `${canvasRect.left + canvasRect.width / 2 - 100}px`;
+  pinInput.style.top = `${canvasRect.top + canvasRect.height / 2 - 40}px`;
+  pinInput.style.width = "200px";
+  pinInput.style.textAlign = "center";
+  pinInput.style.padding = "10px";
+  pinInput.style.borderRadius = "5px";
+  pinInput.style.border = "2px solid gray";
+  pinInput.style.fontSize = "16px";
+  pinInput.style.boxShadow = "2px 2px 5px rgba(0, 0, 0, 0.3)";
   gameContainer.appendChild(pinInput);
 
-  // Add event listeners for input fields
+  // Attach event listeners for input
   usernameInput.addEventListener("input", (e) => (playerName = e.target.value));
   pinInput.addEventListener("input", (e) => (playerPin = e.target.value));
 
-  // Focus on the username input field initially
+  // Focus management
   usernameInput.focus();
 }
 

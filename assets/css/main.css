@@ -186,17 +186,16 @@ input, select, textarea {
 
 /* Container */
 	/* Container */
-#gameContainer {
-	width: 500px;
-	height: 500px;
-	overflow: hidden;
-	position: relative;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center; /* Center elements horizontally and vertically */
-	gap: 10px; /* Spacing between input fields */
-  }
+	#gameContainer {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		gap: 10px;
+		position: relative;
+		overflow: visible; /* Allow elements like error messages to overflow if needed */
+	  }
+	  
   
   /* Input Fields */
   #gameContainer input {
@@ -206,11 +205,12 @@ input, select, textarea {
 	font-family: Arial, sans-serif;
 	background-color: #fff;
 	color: #333;
-	width: 80%; /* Make inputs responsive within the container */
-	max-width: 300px; /* Optional: Set a maximum width for larger screens */
-	box-sizing: border-box; /* Include padding in width calculation */
+	width: calc(80%); /* Match JS dynamic width */
+	max-width: 300px;
+	box-sizing: border-box;
 	text-align: center;
   }
+  
   
   /* Input Focus State */
   #gameContainer input:focus {
@@ -221,24 +221,30 @@ input, select, textarea {
   
   /* Error Message */
   #gameContainer .error-message {
+	position: absolute; /* Position error messages relative to the container */
 	color: red;
 	font-size: 12px;
 	text-align: center;
 	margin-top: 5px;
-	z-index: 1000; /* Ensure it's above other elements */
+	z-index: 1000;
 	font-family: Arial, sans-serif;
   }
   
-  /* Adjust for responsive design */
+  
   @media (max-width: 600px) {
 	#gameContainer {
 	  width: 100%;
-	  height: auto;
 	  padding: 20px;
+	  height: auto;
 	}
   
 	#gameContainer input {
-	  width: 90%; /* Make inputs slightly wider on smaller screens */
+	  width: 90%;
+	  font-size: 14px; /* Adjust for better readability on smaller screens */
+	}
+  
+	#gameContainer .error-message {
+	  font-size: 10px; /* Slightly smaller for compact design */
 	}
   }
   
