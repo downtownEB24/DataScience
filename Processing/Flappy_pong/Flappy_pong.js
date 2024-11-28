@@ -758,7 +758,7 @@ function createInputFields() {
     return; // Avoid recreating fields if they already exist
   }
 
-  const canvasRect = document.querySelector("canvas").getBoundingClientRect();
+  const canvasRect = gameContainer.getBoundingClientRect(); // Use the container dimensions
 
   // Username Input Field
   const usernameInput = document.createElement("input");
@@ -766,10 +766,11 @@ function createInputFields() {
   usernameInput.id = "usernameInput";
   usernameInput.placeholder = "Enter your username";
   usernameInput.style.position = "absolute";
-  usernameInput.style.left = `${canvasRect.width / 2 - 100}px`; // Centered relative to the canvas
+  usernameInput.style.left = `${canvasRect.width / 2 - 100}px`; // Centered relative to the container
   usernameInput.style.top = `${canvasRect.height / 2 - 100}px`; // Adjusted spacing
   usernameInput.style.width = "200px";
   usernameInput.style.textAlign = "center";
+  usernameInput.style.zIndex = "1000"; // Ensure the input is on top
   gameContainer.appendChild(usernameInput);
 
   // Username Error Field
@@ -783,6 +784,7 @@ function createInputFields() {
   usernameErrorDiv.style.fontWeight = "bold";
   usernameErrorDiv.style.fontSize = "14px";
   usernameErrorDiv.style.textAlign = "center";
+  usernameErrorDiv.style.zIndex = "1000"; // Ensure the error div is on top
   gameContainer.appendChild(usernameErrorDiv);
 
   // PIN Input Field
@@ -795,6 +797,7 @@ function createInputFields() {
   pinInput.style.top = `${canvasRect.height / 2 - 10}px`; // Adjusted spacing
   pinInput.style.width = "200px";
   pinInput.style.textAlign = "center";
+  pinInput.style.zIndex = "1000"; // Ensure the input is on top
   gameContainer.appendChild(pinInput);
 
   // PIN Error Field
@@ -808,11 +811,15 @@ function createInputFields() {
   pinErrorDiv.style.fontWeight = "bold";
   pinErrorDiv.style.fontSize = "14px";
   pinErrorDiv.style.textAlign = "center";
+  pinErrorDiv.style.zIndex = "1000"; // Ensure the error div is on top
   gameContainer.appendChild(pinErrorDiv);
 
   // Add event listeners for input fields
   usernameInput.addEventListener("input", (e) => (playerName = e.target.value));
   pinInput.addEventListener("input", (e) => (playerPin = e.target.value));
+
+  // Set focus on the username input initially
+  usernameInput.focus();
 }
 
 
