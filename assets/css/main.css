@@ -189,6 +189,7 @@ input, select, textarea {
 		width: 500px;
 		height: 500px;
 		overflow: hidden;
+		position: relative;
 	}
 
 	#gameContainer input {
@@ -196,6 +197,8 @@ input, select, textarea {
 		border-radius: 5px;
 		padding: 5px;
 		font-family: Arial, sans-serif;
+		background-color: #fff;
+  		color: #333;
   	}
   
   	#gameContainer input:focus {
@@ -203,8 +206,12 @@ input, select, textarea {
 		outline: none;
   	}
 
-	  #gameContainer .error-message {
-		text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+	#gameContainer .error-message {
+		color: red;
+  		font-size: 12px;
+  		text-align: center;
+  		margin-top: 5px;
+  		z-index: 1000; /* Ensure it's above other elements */
 	  }
 
 	.container {
