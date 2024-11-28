@@ -579,7 +579,7 @@ function displayTopScoresScreen() {
   clear(); // Clear the canvas
 
   // Set the glacier background for the top scores screen
-  setBodyBackground("form_highscore.jpg");
+  setBodyBackground("Processing/Flappy_pong/form_highscore.jpg");
 
   textAlign(CENTER, TOP);
   fill(255); // White text for the title
@@ -662,7 +662,7 @@ function topScoreEntryScreen() {
   clear(); // Clear the canvas
 
   // Set the glacier background for the form screen
-  setBodyBackground("In_GameForm.jpg");
+  setBodyBackground("Processing/Flappy_pong/In_GameForm.jpg");
 
  // Remove any existing dynamic elements to avoid duplication or lingering
   removeDynamicElements();
@@ -895,7 +895,7 @@ function displayTopScoresScreen() {
   clear(); // Clear the canvas
 
   // Set the glacier background for the top scores screen
-  setBodyBackground("form_highscore.jpg");
+  setBodyBackground("Processing/Flappy_pong/form_highscore.jpg");
 
   // Remove any existing dynamic elements
   removeDynamicElements();
@@ -941,7 +941,7 @@ function displayConnectionErrorScreen() {
   clear(); // Clear the canvas
 
   // Set the background (if applicable)
-  setBodyBackground("Score_picture.png");
+  setBodyBackground("Processing/Flappy_pong/Score_picture.png");
 
   textAlign(CENTER, CENTER);
 
