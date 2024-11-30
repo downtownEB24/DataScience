@@ -200,52 +200,16 @@ input, select, textarea {
   /* Input Fields */
   #gameContainer input {
 	border: 2px solid gray;
-	border-radius: 5px;
-	padding: 10px;
-	font-family: Arial, sans-serif;
-	background-color: #fff;
-	color: #333;
-	width: calc(80%); /* Match JS dynamic width */
-	max-width: 300px;
-	box-sizing: border-box;
-	text-align: center;
+    border-radius: 5px;
+    padding: 5px;
+    font-family: Arial, sans-serif;
   }
   
   
   /* Input Focus State */
   #gameContainer input:focus {
 	border-color: yellow;
-	outline: none;
-	background-color: #ffffe0; /* Optional: Light yellow background on focus */
-  }
-  
-  /* Error Message */
-  #gameContainer .error-message {
-	position: absolute; /* Position error messages relative to the container */
-	color: red;
-	font-size: 12px;
-	text-align: center;
-	margin-top: 5px;
-	z-index: 1000;
-	font-family: Arial, sans-serif;
-  }
-  
-  
-  @media (max-width: 600px) {
-	#gameContainer {
-	  width: 100%;
-	  padding: 20px;
-	  height: auto;
-	}
-  
-	#gameContainer input {
-	  width: 90%;
-	  font-size: 14px; /* Adjust for better readability on smaller screens */
-	}
-  
-	#gameContainer .error-message {
-	  font-size: 10px; /* Slightly smaller for compact design */
-	}
+    outline: none;
   }
   
 
