@@ -1,3 +1,4 @@
+/* Header Styling */
 #topBar {
     background-color: #333; /* Black background */
     color: white; /* White text */
@@ -5,13 +6,61 @@
     padding: 20px; /* Add spacing inside the bar */
     font-family: Arial, sans-serif; /* Match font with your site */
     border-bottom: 5px solid #007BFF; /* Blue underline */
-    margin: 0; /* Remove default margins */
   }
+
+/* Make sure the HTML and body take the full height */
+html, body {
+    height: 100%;
+    margin: 0; /* Remove default margins */
+    display: flex;
+    flex-direction: column;
+}
   
-  #topBar h1 {
+#topBar h1 {
     font-size: 24px; /* Adjust font size for the header */
     margin: 0; /* Remove default margins from h1 */
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5); /* Add a subtle shadow */
-  }
+}
+
+/* Game Container */
+#gameContainer {
+    flex: 1;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+  
+#gameCanvas {
+    max-width: 100%;  /* Ensures the canvas doesn't overflow the container */
+    max-height: 100%; /* Ensures the canvas doesn't overflow the container */
+}
+
+/* Footer Styling */
+#footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    margin-top: auto; /* Space between game and footer */
+}
+
+/* Back Button */
+.back-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 16px;
+    margin-top: 10px;
+    transition: background-color 0.3s ease; /* Smooth hover effect */
+}
+
+.back-button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
   
   

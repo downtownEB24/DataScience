@@ -4,7 +4,7 @@ let gameScreen = 0;
 let difficulty;
 let backgroundX = 0;
 let backgroundImage; // BackgroundImage class instance
-let easyImg, mediumImg, hardImg, welcomeBackground; // Image variables
+let easyImg, mediumImg, hardImg, welcomeBackground, ScoreImage, form_highScoreImg, inGameFormImage; // Image variables
 let score = 0;
 let lastAddTime = 0;
 let lastWallTime = 0;
@@ -410,6 +410,7 @@ function preload() {
 /********* SET UP *********/
 function setup() {
   const canvas = createCanvas(500, 500);
+  canvas.id("gameCanvas");  // Set a custom ID
   canvas.parent("gameContainer"); // Attach canvas to #gameContainer
   backgroundImage = new BackgroundImage(easyImg, mediumImg, hardImg);
   ball = new Ball(width / 2, height / 2, 20, color(0));
@@ -859,7 +860,7 @@ function setBodyBackground(imageUrl = "") {
 
   if (imageUrl) {
     // Set the background image for the game container
-    gameContainer.style.backgroundImage = `url(${imageUrl})`;
+    gameContainer.style.backgroundImage = `url(${imageUrl.canvas.toDataURL()})`;
     gameContainer.style.backgroundSize = "100% 100%"; // Ensure image fits exactly
     gameContainer.style.backgroundRepeat = "no-repeat"; // Prevent duplicates
     gameContainer.style.backgroundPosition = "center center"; // Center the image
