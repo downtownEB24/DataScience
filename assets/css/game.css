@@ -1,0 +1,17 @@
+#topBar {
+    background-color: #333; /* Black background */
+    color: white; /* White text */
+    text-align: center; /* Center align text */
+    padding: 20px; /* Add spacing inside the bar */
+    font-family: Arial, sans-serif; /* Match font with your site */
+    border-bottom: 5px solid #007BFF; /* Blue underline */
+    margin: 0; /* Remove default margins */
+  }
+  
+  #topBar h1 {
+    font-size: 24px; /* Adjust font size for the header */
+    margin: 0; /* Remove default margins from h1 */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5); /* Add a subtle shadow */
+  }
+  
+  

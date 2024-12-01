@@ -185,34 +185,6 @@ input, select, textarea {
 	}
 
 /* Container */
-	/* Container */
-	#gameContainer {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		gap: 10px;
-		position: relative;
-		overflow: visible; /* Allow elements like error messages to overflow if needed */
-	  }
-	  
-  
-  /* Input Fields */
-  #gameContainer input {
-	border: 2px solid gray;
-    border-radius: 5px;
-    padding: 5px;
-    font-family: Arial, sans-serif;
-  }
-  
-  
-  /* Input Focus State */
-  #gameContainer input:focus {
-	border-color: yellow;
-    outline: none;
-  }
-  
-
 	.container {
 		margin: 0 auto;
 		max-width: 100%;

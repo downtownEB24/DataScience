@@ -4,7 +4,7 @@ let gameScreen = 0;
 let difficulty;
 let backgroundX = 0;
 let backgroundImage; // BackgroundImage class instance
-let easyImg, mediumImg, hardImg, welcomeBackground, ScoreImage, form_highScoreImg, inGameFormImage; // Image variables
+let easyImg, mediumImg, hardImg, welcomeBackground; // Image variables
 let score = 0;
 let lastAddTime = 0;
 let lastWallTime = 0;
@@ -409,28 +409,12 @@ function preload() {
 
 /********* SET UP *********/
 function setup() {
-  const gameContainer = document.getElementById("gameContainer");
-  if (!gameContainer) {
-    console.error("Game container not found!");
-    return;
-  }
-
-  const width = gameContainer.offsetWidth; // Use offsetWidth for static dimensions
-  const height = gameContainer.offsetHeight; // Use offsetHeight for static dimensions
-
-  // Create the canvas within the #gameContainer div
-  const canvas = createCanvas(width, height);
-  canvas.parent("gameContainer");
-
-  // Initialize game objects
+  const canvas = createCanvas(500, 500);
+  canvas.parent("gameContainer"); // Attach canvas to #gameContainer
   backgroundImage = new BackgroundImage(easyImg, mediumImg, hardImg);
   ball = new Ball(width / 2, height / 2, 20, color(0));
   racket = new Racket(color(0), 100, 10);
-
-  // Add focus to the canvas
   document.querySelector("canvas").focus();
-
-  // Setup debounce for inputs
   setupInputDebounce();
 }
 
@@ -522,56 +506,50 @@ function keyTyped() {
 
 function displayErrorMessages() {
   const gameContainer = document.getElementById("gameContainer");
-  if (!gameContainer) {
-    console.error("Game container not found!");
-    return;
-  }
+  const usernameInput = document.getElementById("usernameInput");
+  const pinInput = document.getElementById("pinInput");
 
-  const usernameInput = gameContainer.querySelector("#usernameInput");
-  const pinInput = gameContainer.querySelector("#pinInput");
-
-  // Remove any existing error message elements within the game container
-  const existingErrors = gameContainer.querySelectorAll(".error-message");
+  // Remove any existing error message elements
+  const existingErrors = document.querySelectorAll(".error-message");
   existingErrors.forEach((error) => error.remove());
 
-  // Helper function to create error messages
-  function createErrorMessage(inputElement, errorMessage) {
-    if (!inputElement) return;
-
-    const errorDiv = document.createElement("div");
-    errorDiv.className = "error-message";
-    errorDiv.textContent = errorMessage;
-
-    // Style the error message
-    errorDiv.style.position = "absolute";
-    errorDiv.style.color = "red";
-    errorDiv.style.fontWeight = "bold";
-    errorDiv.style.fontSize = "14px";
-    errorDiv.style.fontFamily = "Tahoma, Geneva, sans-serif";
-    errorDiv.style.textShadow = "1px 1px 3px rgba(0, 0, 0, 0.5)";
-    
-    // Position the error message relative to the input field
-    const inputRect = inputElement.getBoundingClientRect();
-    const containerRect = gameContainer.getBoundingClientRect();
-
-    // Calculate position relative to #gameContainer
-    errorDiv.style.left = `${inputRect.left - containerRect.left}px`;
-    errorDiv.style.top = `${inputRect.top - containerRect.top + inputElement.offsetHeight + 5}px`;
-
-    // Append the error message to the game container
-    gameContainer.appendChild(errorDiv);
-  }
-
   // Display username error
-  if (usernameError) {
-    createErrorMessage(usernameInput, usernameError);
+  if (usernameError && usernameInput) {
+    const usernameErrorDiv = document.createElement("div");
+    usernameErrorDiv.className = "error-message";
+    usernameErrorDiv.textContent = usernameError;
+    usernameErrorDiv.style.position = "absolute";
+    usernameErrorDiv.style.color = "red";
+    usernameErrorDiv.style.fontWeight = "bold";
+    usernameErrorDiv.style.fontSize = "14px";
+    usernameErrorDiv.style.fontFamily = "Tahoma, Geneva, sans-serif";
+    usernameErrorDiv.style.left = `${usernameInput.offsetLeft}px`;
+    usernameErrorDiv.style.top = `${usernameInput.offsetTop + usernameInput.offsetHeight + 5}px`; // Just below input
+    
+     // Add shadow effect
+    usernameErrorDiv.style.textShadow = "1px 1px 3px rgba(0, 0, 0, 0.5)";
+    gameContainer.body.appendChild(usernameErrorDiv);
   }
 
   // Display PIN error
-  if (pinError) {
-    createErrorMessage(pinInput, pinError);
+  if (pinError && pinInput) {
+    const pinErrorDiv = document.createElement("div");
+    pinErrorDiv.className = "error-message";
+    pinErrorDiv.textContent = pinError;
+    pinErrorDiv.style.position = "absolute";
+    pinErrorDiv.style.color = "red";
+    pinErrorDiv.style.fontWeight = "bold";
+    pinErrorDiv.style.fontSize = "14px";
+    pinErrorDiv.style.fontFamily = "Tahoma, Geneva, sans-serif";
+    pinErrorDiv.style.left = `${pinInput.offsetLeft}px`;
+    pinErrorDiv.style.top = `${pinInput.offsetTop + pinInput.offsetHeight + 5}px`; // Just below input
+    
+    // Add shadow effect
+    pinErrorDiv.style.textShadow = "1px 1px 3px rgba(0, 0, 0, 0.5)";
+    gameContainer.appendChild(pinErrorDiv);
   }
 }
+
 
 function validateInputs() {
   usernameError = "";
@@ -630,24 +608,17 @@ function displayTopScoresScreen() {
 
 function removeInputFields() {
   const gameContainer = document.getElementById("gameContainer");
-  if (!gameContainer) {
-    console.error("Game container not found!");
-    return;
-  }
-
-  // Find input fields within the game container
   const usernameInput = gameContainer.querySelector("#usernameInput");
   const pinInput = gameContainer.querySelector("#pinInput");
 
   // Remove input fields
-  if (usernameInput) {
+  if (usernameInput){
     usernameInput.remove();
   }
-  if (pinInput) {
+  if (pinInput){
     pinInput.remove();
   }
-
-  // Remove error messages within the game container
+  // Remove error messages
   const existingErrors = gameContainer.querySelectorAll(".error-message");
   existingErrors.forEach((error) => error.remove());
 }
@@ -691,41 +662,37 @@ async function submitTopScore() {
 function topScoreEntryScreen() {
   clear(); // Clear the canvas
 
-  const gameContainer = document.getElementById("gameContainer");
-  if (!gameContainer) {
-    console.error("Game container not found!");
-    return;
-  }
-
   // Set the glacier background for the form screen
   setBodyBackground(inGameFormImage);
 
-  // Remove any existing dynamic elements to avoid duplication or lingering
+ // Remove any existing dynamic elements to avoid duplication or lingering
   removeDynamicElements();
 
   // Create and style the title dynamically
+  const gameContainer = document.getElementById("gameContainer");
   const titleElement = document.createElement("div");
-  titleElement.id = "titleElement";
+  titleElement.id = "titleElement"; // Assign an ID for reference
   titleElement.innerText = "Congratulations! Top 5 Score!";
   titleElement.style.position = "absolute";
-  titleElement.style.top = "20px"; // Position relative to #gameContainer
+  titleElement.style.top = "50px"; // Adjust this value for proper positioning
   titleElement.style.left = "50%";
   titleElement.style.transform = "translateX(-50%)"; // Center horizontally
   titleElement.style.fontSize = "32px";
   titleElement.style.fontWeight = "bold";
   titleElement.style.color = "white";
-  titleElement.style.textShadow = "2px 2px 5px rgba(0, 0, 0, 0.8)"; // Add shadow for visibility
+  titleElement.style.textShadow = "2px 2px 5px rgba(0, 0, 0, 0.8)"; // Dark shadow
+  titleElement.style.whiteSpace = "nowrap"; // Prevent text from breaking into multiple lines
   gameContainer.appendChild(titleElement);
 
   // Dynamically create input fields if they don't already exist
   if (!gameContainer.querySelector("#usernameInput")) {
-    createInputFields(); // Ensure `createInputFields` scopes to `#gameContainer`
+    createInputFields();
   }
 
-  // Render instructions on the canvas
-  textAlign(CENTER); // Align text to the center of the canvas
-  fill(255, 255, 0); // Yellow text for visibility
+  // Reminder and instructions (Main Message)
+  fill(255, 255, 0); // Yellow text for high visibility
   textSize(14); // Slightly smaller text for additional instructions
+  textAlign(CENTER); // Center-align the message
   text(
     "If you created a username and PIN before, please use them again.",
     width / 2,
@@ -738,85 +705,96 @@ function topScoreEntryScreen() {
   );
 
   // Additional instruction for submitting
-  textSize(16); // Larger text for emphasis
+  textSize(16); // Slightly larger text for pressing Enter
   text("Press Enter to submit", width / 2, height - 70);
 }
 
 
+
 function createInputFields() {
   const gameContainer = document.getElementById("gameContainer");
-  if (!gameContainer) {
-    console.error("Game container not found!");
-    return;
+  if (gameContainer.querySelector("#usernameInput") && gameContainer.querySelector("#pinInput")) {
+    return; // Avoid recreating fields if they already exist
   }
 
-  // Remove existing fields to prevent duplication
-  removeInputFields();
-
-  // Define input dimensions and styles relative to #gameContainer
-  const containerRect = gameContainer.getBoundingClientRect();
-
-  // Helper function to create input or error elements
-  function createElement(type, id, placeholder, topOffset, styles) {
-    const element = document.createElement(type);
-    element.id = id;
-    if (placeholder) element.placeholder = placeholder;
-
-    // Apply common styles
-    element.style.position = "absolute";
-    element.style.left = `${containerRect.left + containerRect.width / 2 - 100}px`;
-    element.style.top = `${containerRect.top + topOffset}px`;
-    element.style.width = "200px";
-    element.style.textAlign = "center";
-    if (styles) Object.assign(element.style, styles);
-
-    gameContainer.appendChild(element);
-    return element;
-  }
+  const canvasRect = gameContainer.querySelector("canvas").getBoundingClientRect();
 
   // Username Input Field
-  const usernameInput = createElement("input", "usernameInput", "Enter your username", containerRect.height / 2 - 100);
+  const usernameInput = document.createElement("input");
+  usernameInput.type = "text";
+  usernameInput.id = "usernameInput";
+  usernameInput.placeholder = "Enter your username";
+  usernameInput.style.position = "absolute";
+  usernameInput.style.left = `${canvasRect.left + canvasRect.width / 2 - 100}px`;
+  usernameInput.style.top = `${canvasRect.top + canvasRect.height / 2 - 100}px`; // Adjusted spacing
+  usernameInput.style.width = "200px";
+  usernameInput.style.textAlign = "center";
+  gameContainer.appendChild(usernameInput);
 
   // Username Error Field
-  createElement(
-    "div",
-    "usernameErrorDiv",
-    null,
-    containerRect.height / 2 - 65,
-    { color: "red", fontWeight: "bold", fontSize: "14px", textAlign: "center" }
-  );
+  const usernameErrorDiv = document.createElement("div");
+  usernameErrorDiv.id = "usernameErrorDiv";
+  usernameErrorDiv.style.position = "absolute";
+  usernameErrorDiv.style.left = `${canvasRect.left + canvasRect.width / 2 - 100}px`;
+  usernameErrorDiv.style.top = `${canvasRect.top + canvasRect.height / 2 - 65}px`; // Below the input field
+  usernameErrorDiv.style.width = "200px";
+  usernameErrorDiv.style.color = "red";
+  usernameErrorDiv.style.fontWeight = "bold";
+  usernameErrorDiv.style.fontSize = "14px";
+  usernameErrorDiv.style.textAlign = "center";
+  gameContainer.appendChild(usernameErrorDiv);
 
   // PIN Input Field
-  const pinInput = createElement("input", "pinInput", "Enter your PIN", containerRect.height / 2 - 10);
+  const pinInput = document.createElement("input");
+  pinInput.type = "password";
+  pinInput.id = "pinInput";
+  pinInput.placeholder = "Enter your PIN";
+  pinInput.style.position = "absolute";
+  pinInput.style.left = `${canvasRect.left + canvasRect.width / 2 - 100}px`;
+  pinInput.style.top = `${canvasRect.top + canvasRect.height / 2 - 10}px`; // Adjusted spacing
+  pinInput.style.width = "200px";
+  pinInput.style.textAlign = "center";
+  gameContainer.appendChild(pinInput);
 
   // PIN Error Field
-  createElement(
-    "div",
-    "pinErrorDiv",
-    null,
-    containerRect.height / 2 + 25,
-    { color: "red", fontWeight: "bold", fontSize: "14px", textAlign: "center" }
-  );
+  const pinErrorDiv = document.createElement("div");
+  pinErrorDiv.id = "pinErrorDiv";
+  pinErrorDiv.style.position = "absolute";
+  pinErrorDiv.style.left = `${canvasRect.left + canvasRect.width / 2 - 100}px`;
+  pinErrorDiv.style.top = `${canvasRect.top + canvasRect.height / 2 + 25}px`; // Below the input field
+  pinErrorDiv.style.width = "200px";
+  pinErrorDiv.style.color = "red";
+  pinErrorDiv.style.fontWeight = "bold";
+  pinErrorDiv.style.fontSize = "14px";
+  pinErrorDiv.style.textAlign = "center";
+  gameContainer.appendChild(pinErrorDiv);
 
-  // Attach event listeners for input fields
   usernameInput.addEventListener("input", (e) => (playerName = e.target.value));
   pinInput.addEventListener("input", (e) => (playerPin = e.target.value));
 }
 
+
+function removeInputFields() {
+  const gameContainer = document.getElementById("gameContainer");
+  const usernameInput = gameContainer.querySelector("#usernameInput");
+  const pinInput = gameContainer.querySelector("#pinInput");
+
+  // Remove input fields
+  if (usernameInput) usernameInput.remove();
+  if (pinInput) pinInput.remove();
+
+  // Remove error messages
+  const existingErrors = gameContainer.querySelectorAll(".error-message");
+  existingErrors.forEach((error) => error.remove());
+}
+
 function removeDynamicElements() {
   const gameContainer = document.getElementById("gameContainer");
-  if (!gameContainer) {
-    console.error("Game container not found!");
-    return;
-  }
-
-  // Remove title element within the game container
   const titleElement = gameContainer.querySelector("#titleElement");
   if (titleElement) {
     titleElement.remove();
   }
 
-  // Remove username and PIN input fields within the game container
   const usernameInput = gameContainer.querySelector("#usernameInput");
   if (usernameInput) {
     usernameInput.remove();
@@ -827,11 +805,9 @@ function removeDynamicElements() {
     pinInput.remove();
   }
 
-  // Remove error messages within the game container
   const errorMessages = gameContainer.querySelectorAll(".error-message");
   errorMessages.forEach((error) => error.remove());
 }
-
 
 function fetchTopScores(difficulty, playerScore) {
   const url = `https://api-project-3abl.onrender.com/api/scores/${difficulty}`;
@@ -875,13 +851,11 @@ function fetchTopScores(difficulty, playerScore) {
 
 function setBodyBackground(imageUrl = "") {
   const gameContainer = document.getElementById("gameContainer");
+
   if (!gameContainer) {
     console.error("Game container not found!");
     return;
   }
-
-  const canvasWidth = gameContainer.offsetWidth; // Get width from inline style
-  const canvasHeight = gameContainer.offsetHeight; // Get height from inline style
 
   if (imageUrl) {
     // Set the background image for the game container
@@ -890,15 +864,19 @@ function setBodyBackground(imageUrl = "") {
     gameContainer.style.backgroundRepeat = "no-repeat"; // Prevent duplicates
     gameContainer.style.backgroundPosition = "center center"; // Center the image
 
-    // Apply dynamic dimensions
+    // Match the canvas dimensions
+    const canvasWidth = 500; // Game canvas width
+    const canvasHeight = 500; // Game canvas height
+
+    // Set dimensions for the game container
     gameContainer.style.width = `${canvasWidth}px`;
     gameContainer.style.height = `${canvasHeight}px`;
-    gameContainer.style.overflow = "hidden"; // Prevent scrolling within the game container
+    gameContainer.style.overflow = "hidden"; // Prevent scrolling
     gameContainer.style.margin = "0 auto"; // Center the container horizontally
     gameContainer.style.padding = "0";
     gameContainer.style.position = "relative";
   } else {
-    // Reset the styles
+    // Reset the styles for gameContainer
     gameContainer.style.backgroundImage = "";
     gameContainer.style.width = "";
     gameContainer.style.height = "";
@@ -909,14 +887,9 @@ function setBodyBackground(imageUrl = "") {
   }
 }
 
+
 function displayTopScoresScreen() {
   clear(); // Clear the canvas
-
-  const gameContainer = document.getElementById("gameContainer");
-  if (!gameContainer) {
-    console.error("Game container not found!");
-    return;
-  }
 
   // Set the glacier background for the top scores screen
   setBodyBackground(form_highScoreImg);
@@ -925,6 +898,7 @@ function displayTopScoresScreen() {
   removeDynamicElements();
 
   // Create and style the title dynamically
+  const gameContainer = document.getElementById("gameContainer");
   const titleElement = document.createElement("div");
   titleElement.id = "topScoresTitle"; // Assign an ID for reference
   titleElement.innerText = "Top 5 Scores";
@@ -938,8 +912,6 @@ function displayTopScoresScreen() {
   titleElement.style.textShadow = "2px 2px 5px rgba(0, 0, 0, 0.8)"; // Dark shadow
   titleElement.style.textAlign = "center";
   titleElement.style.whiteSpace = "nowrap"; // Prevent wrapping
-
-  // Append the title to the game container
   gameContainer.appendChild(titleElement);
 
   // Display the scores
@@ -962,7 +934,6 @@ function displayTopScoresScreen() {
   textFont("Arial"); // Reset font for this part
   text("Press R to Restart", width / 2, height - 40);
 }
-
 
 function displayConnectionErrorScreen() {
   clear(); // Clear the canvas
