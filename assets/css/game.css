@@ -1,19 +1,28 @@
-/* Header Styling */
+/* General Reset */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%; /* Ensures full height is used */
+}
+
+/* Flex Layout for Body */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Full viewport height */
+    overflow-y: auto; /* Allow vertical scrolling */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+/* Header */
 #topBar {
+    width: 100%; /* Take full screen width */
     background-color: #333; /* Black background */
     color: white; /* White text */
-    text-align: center; /* Center align text */
+    text-align: center; /* Center text */
     padding: 20px; /* Add spacing inside the bar */
     font-family: Arial, sans-serif; /* Match font with your site */
     border-bottom: 5px solid #007BFF; /* Blue underline */
-  }
-
-/* Make sure the HTML and body take the full height */
-html, body {
-    height: 100%;
-    margin: 0; /* Remove default margins */
-    display: flex;
-    flex-direction: column;
 }
   
 #topBar h1 {
@@ -21,33 +30,26 @@ html, body {
     margin: 0; /* Remove default margins from h1 */
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5); /* Add a subtle shadow */
 }
-
-/* Game Container */
-#gameContainer {
-    flex: 1;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
   
 #gameCanvas {
     max-width: 100%;  /* Ensures the canvas doesn't overflow the container */
     max-height: 100%; /* Ensures the canvas doesn't overflow the container */
+    pointer-events: none;
+    z-index: 0;
 }
 
-/* Footer Styling */
+/* Footer */
 #footer {
+    width: 100%; /* Full screen width */
     background-color: #333;
     color: white;
     text-align: center;
-    padding: 10px 0;
-    margin-top: auto; /* Space between game and footer */
+    padding: 10px; /* Add spacing */
+    margin: 0;
+    position: relative;
 }
 
-/* Back Button */
-.back-button {
+#footer .back-button {
     display: inline-block;
     padding: 10px 20px;
     background-color: #007bff;
@@ -55,12 +57,41 @@ html, body {
     text-decoration: none;
     border-radius: 5px;
     font-size: 16px;
-    margin-top: 10px;
-    transition: background-color 0.3s ease; /* Smooth hover effect */
+    margin: 10px;
+    transition: background-color 0.3s ease;
 }
 
-.back-button:hover {
+#footer .back-button:hover {
     background-color: #0056b3; /* Darker blue on hover */
 }
-  
-  
+
+/* Main container */
+#mainContainer {
+    flex: 1; /* Fills the available space between header and footer */
+    display: flex;
+    justify-content: center; /* Horizontally center the game container */
+    align-items: center; /* Vertically center the game container */
+}
+
+#gameContainer {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative; /* Establish a stacking context */
+    z-index: 10; /* Keep it above the canvas */
+    pointer-events: auto;
+}
+
+/* Input Styling */
+input {
+    z-index: 20; /* Ensure it is above the canvas */
+    outline: none; /* Remove default focus styles */
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); /* Subtle shadow for visibility */
+    transition: box-shadow 0.2s ease-in-out;
+    pointer-events: auto;
+}
+
+input:focus {
+    box-shadow: 0 0 10px rgba(0, 150, 255, 0.8); /* Blue shadow when focused */
+}

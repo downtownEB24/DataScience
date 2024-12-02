@@ -4,7 +4,7 @@ let gameScreen = 0;
 let difficulty;
 let backgroundX = 0;
 let backgroundImage; // BackgroundImage class instance
-let easyImg, mediumImg, hardImg, welcomeBackground, ScoreImage, form_highScoreImg, inGameFormImage; // Image variables
+let easyImg, mediumImg, hardImg, welcomeBackground, ScoreImage; // Image variables
 let score = 0;
 let lastAddTime = 0;
 let lastWallTime = 0;
@@ -27,6 +27,7 @@ let playerPin = ""; // Stores the player's inputted PIN
 let activeField = "username"; // Keeps track of the currently active input field
 let fetchFailed = false; // Flag to track if the fetch has failed
 let gameOverTriggered = false; // New flag to track if game over has been triggered
+let inputFieldsCreated = false; // Add a flag to prevent repeated creation
 
 const gravity = 0.3;
 const airfriction = 0.00001;
@@ -58,7 +59,7 @@ class Ball {
     this.health = Math.max(0, this.health - amount);
     if (this.health <= 0 && !gameOverTriggered) {
       gameOverTriggered = true; // Prevent further calls
-      console.log("Health reached zero. Triggering game over.");
+      //console.log("Health reached zero. Triggering game over.");
       gameOver(); // Call game over if health reaches zero
     }
   }
@@ -222,7 +223,7 @@ class HealthBoost {
       this.collected = true; // Mark as collected
       let healthIncrease = maxHealth * 0.8; // 80% of maxHealth
       ball.health = min(ball.health + healthIncrease, maxHealth); // Increase the ball's health, capped at maxHealth
-      console.log("Health boost collected. New health:", ball.health);
+      //console.log("Health boost collected. New health:", ball.health);
     }
   }
 }
@@ -404,20 +405,35 @@ function preload() {
   ScoreImage = loadImage("Processing/Flappy_pong/Score_picture.png");
   form_highScoreImg = loadImage("Processing/Flappy_pong/form_highscore.jpg");
   inGameFormImage = loadImage("Processing/Flappy_pong/In_GameForm.jpg");
-  console.log("Images loaded"); 
+  //console.log("Images loaded"); 
 }
 
 /********* SET UP *********/
 function setup() {
   const canvas = createCanvas(500, 500);
-  canvas.id("gameCanvas");  // Set a custom ID
+  canvas.id("gameCanvas"); // Set a custom ID
   canvas.parent("gameContainer"); // Attach canvas to #gameContainer
+  canvas.style.pointerEvents = "none"; // Prevent canvas from blocking inputs
+  canvas.style.zIndex = "-1"; // Push canvas below the inputs
+
   backgroundImage = new BackgroundImage(easyImg, mediumImg, hardImg);
   ball = new Ball(width / 2, height / 2, 20, color(0));
   racket = new Racket(color(0), 100, 10);
-  document.querySelector("canvas").focus();
-  setupInputDebounce();
+
+  // Stop draw loop when interacting with inputs
+  const usernameInput = document.getElementById("usernameInput");
+  const pinInput = document.getElementById("pinInput");
+
+  usernameInput?.addEventListener("focus", () => noLoop());
+  pinInput?.addEventListener("focus", () => noLoop());
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest("#usernameInput") && !e.target.closest("#pinInput")) {
+      loop(); // Resume draw loop when clicking outside inputs
+    }
+  });
 }
+
 
 /********* MAIN FUNCTIONS *********/
 function updateGame() {
@@ -463,7 +479,7 @@ function setupInputDebounce() {
 
 function draw() {
   clear(); // Clear the canvas before rendering the next frame
-  console.log("Current gameScreen:", gameScreen); // Log the current gameScreen for debugging
+  //console.log("Current gameScreen:", gameScreen); // Log the current gameScreen for debugging
   switch (gameScreen) {
     case 0:
       selectDifficulty();
@@ -480,6 +496,7 @@ function draw() {
       break;
     case 4:
       displayTopScoresScreen();
+      noLoop();
       break;
     case 5:
       displayConnectionErrorScreen();
@@ -506,104 +523,51 @@ function keyTyped() {
 }
 
 function displayErrorMessages() {
-  const gameContainer = document.getElementById("gameContainer");
-  const usernameInput = document.getElementById("usernameInput");
-  const pinInput = document.getElementById("pinInput");
+  const usernameErrorDiv = document.getElementById("usernameError");
+  const pinErrorDiv = document.getElementById("pinError");
 
-  // Remove any existing error message elements
-  const existingErrors = document.querySelectorAll(".error-message");
-  existingErrors.forEach((error) => error.remove());
-
-  // Display username error
-  if (usernameError && usernameInput) {
-    const usernameErrorDiv = document.createElement("div");
-    usernameErrorDiv.className = "error-message";
+  // Username Error
+  if (usernameError) {
     usernameErrorDiv.textContent = usernameError;
-    usernameErrorDiv.style.position = "absolute";
-    usernameErrorDiv.style.color = "red";
-    usernameErrorDiv.style.fontWeight = "bold";
-    usernameErrorDiv.style.fontSize = "14px";
-    usernameErrorDiv.style.fontFamily = "Tahoma, Geneva, sans-serif";
-    usernameErrorDiv.style.left = `${usernameInput.offsetLeft}px`;
-    usernameErrorDiv.style.top = `${usernameInput.offsetTop + usernameInput.offsetHeight + 5}px`; // Just below input
-    
-     // Add shadow effect
-    usernameErrorDiv.style.textShadow = "1px 1px 3px rgba(0, 0, 0, 0.5)";
-    gameContainer.body.appendChild(usernameErrorDiv);
+  } else {
+    usernameErrorDiv.textContent = ""; // Clear error if no issue
   }
 
-  // Display PIN error
-  if (pinError && pinInput) {
-    const pinErrorDiv = document.createElement("div");
-    pinErrorDiv.className = "error-message";
+  // PIN Error
+  if (pinError) {
     pinErrorDiv.textContent = pinError;
-    pinErrorDiv.style.position = "absolute";
-    pinErrorDiv.style.color = "red";
-    pinErrorDiv.style.fontWeight = "bold";
-    pinErrorDiv.style.fontSize = "14px";
-    pinErrorDiv.style.fontFamily = "Tahoma, Geneva, sans-serif";
-    pinErrorDiv.style.left = `${pinInput.offsetLeft}px`;
-    pinErrorDiv.style.top = `${pinInput.offsetTop + pinInput.offsetHeight + 5}px`; // Just below input
-    
-    // Add shadow effect
-    pinErrorDiv.style.textShadow = "1px 1px 3px rgba(0, 0, 0, 0.5)";
-    gameContainer.appendChild(pinErrorDiv);
+  } else {
+    pinErrorDiv.textContent = ""; // Clear error if no issue
   }
 }
 
 
 function validateInputs() {
-  usernameError = "";
-  pinError = "";
+  let valid = true;
 
-  // Username validation: must be alphanumeric and 8–15 characters long
-  if (!/^[a-zA-Z0-9]{8,15}$/.test(playerName)) {
-    usernameError = "Username must be 8–15 alphanumeric characters.";
+  // Username Validation
+  const usernameErrorDiv = document.getElementById("usernameError");
+  if (usernameErrorDiv) {
+    if (!/^[a-zA-Z0-9]{8,15}$/.test(playerName)) {
+      usernameErrorDiv.textContent = "Username must be 8–15 alphanumeric characters.";
+      valid = false;
+    } else {
+      usernameErrorDiv.textContent = ""; // Clear error
+    }
   }
 
-  // PIN validation: must be exactly 6 digits and not a common sequence
-  if (!/^\d{6}$/.test(playerPin) || ["123456", "000000", "111111"].includes(playerPin)) {
-    pinError = "PIN must be 6 digits and not '123456', '000000', or '111111'.";
+  // PIN Validation
+  const pinErrorDiv = document.getElementById("pinError");
+  if (pinErrorDiv) {
+    if (!/^\d{6}$/.test(playerPin) || ["123456", "000000", "111111"].includes(playerPin)) {
+      pinErrorDiv.textContent = "PIN must be 6 digits and not '123456', '000000', or '111111'.";
+      valid = false;
+    } else {
+      pinErrorDiv.textContent = ""; // Clear error
+    }
   }
 
-  // Display errors if any
-  if (usernameError || pinError) {
-    displayErrorMessages();
-  }
-
-  // Return true if both fields are valid
-  return usernameError === "" && pinError === "";
-}
-
-
-function displayTopScoresScreen() {
-  clear(); // Clear the canvas
-
-  // Set the glacier background for the top scores screen
-  setBodyBackground(form_highScoreImg);
-
-  textAlign(CENTER, TOP);
-  fill(255); // White text for the title
-  textSize(32);
-  text("Top 5 Scores", width / 2, 30); // Title at the top
-
-  // Adjust the starting position and spacing
-  textSize(20);
-  fill(255, 255, 0); // Yellow text for the scores
-  textFont('monospace'); // Use monospaced font for alignment
-  const startY = 100; // Increased starting y-coordinate for more separation
-  const lineHeight = 40; // Space between lines
-
-  topScores.forEach((score, index) => {
-    let line = `${index + 1}. ${score.username.padEnd(15, ' ')} - ${score.score}`;
-    text(line, width / 2, startY + index * lineHeight); // Display score
-  });
-
-  // Restart Instruction
-  textSize(16);
-  fill(255); // White text for restart instruction
-  textFont('Arial'); // Reset font to default
-  text("Press R to Restart", width / 2, height - 40);
+  return valid;
 }
 
 
@@ -627,11 +591,14 @@ function removeInputFields() {
 
 async function submitTopScore() {
   if (!validateInputs()) {
+    //console.error("Input validation failed.");
     return; // Do not proceed if inputs are invalid
   }
 
   const url = "https://api-project-3abl.onrender.com/api/scores";
   const data = { username: playerName, pin: playerPin, score, difficulty_level: difficulty };
+
+  //console.log("Submitting Score Data:", data);
 
   try {
     const response = await fetch(url, {
@@ -641,137 +608,183 @@ async function submitTopScore() {
     });
 
     const responseData = await response.json();
+    //console.log("Response Data:", responseData);
 
     if (response.status >= 400) {
       usernameError = responseData.details || responseData.message;
-      console.error("Submission error:", responseData);
+      //console.error("Submission error:", responseData);
       return;
     }
 
-    // After submission, remove the input fields and transition to the Top Scores Screen
-    removeInputFields();
-    gameScreen = 4; // Move to the Top Scores Display Screen
+    // Score submitted successfully
+    //console.log("Score submitted successfully. Transitioning to Top Scores screen.");
+    removeInputFields(); // Remove the input fields
+    fetchTopScores(difficulty, score) // Ensure scores are fetched after submission
+      .then(() => {
+        gameScreen = 4; // Transition to the Top Scores screen
+        loop(); // Ensure the draw loop is active
+      })
+      .catch((error) => {
+        //console.error("Error fetching top scores after submission:", error);
+        gameScreen = 5; // Transition to an error screen if fetch fails
+      });
   } catch (error) {
-    console.error("Error submitting score:", error);
-    // Update usernameError and show connection error
+    //console.error("Error submitting score:", error);
     usernameError = "Unable to save your score. Please check your connection.";
-    gameScreen = 5; //Transition to a new error state
+    gameScreen = 5; // Transition to connection error screen
   }
 }
-
 
 function topScoreEntryScreen() {
   clear(); // Clear the canvas
-
-  // Set the glacier background for the form screen
-  setBodyBackground(inGameFormImage);
-
- // Remove any existing dynamic elements to avoid duplication or lingering
-  removeDynamicElements();
-
-  // Create and style the title dynamically
-  const gameContainer = document.getElementById("gameContainer");
-  const titleElement = document.createElement("div");
-  titleElement.id = "titleElement"; // Assign an ID for reference
-  titleElement.innerText = "Congratulations! Top 5 Score!";
-  titleElement.style.position = "absolute";
-  titleElement.style.top = "50px"; // Adjust this value for proper positioning
-  titleElement.style.left = "50%";
-  titleElement.style.transform = "translateX(-50%)"; // Center horizontally
-  titleElement.style.fontSize = "32px";
-  titleElement.style.fontWeight = "bold";
-  titleElement.style.color = "white";
-  titleElement.style.textShadow = "2px 2px 5px rgba(0, 0, 0, 0.8)"; // Dark shadow
-  titleElement.style.whiteSpace = "nowrap"; // Prevent text from breaking into multiple lines
-  gameContainer.appendChild(titleElement);
-
-  // Dynamically create input fields if they don't already exist
-  if (!gameContainer.querySelector("#usernameInput")) {
-    createInputFields();
-  }
-
-  // Reminder and instructions (Main Message)
-  fill(255, 255, 0); // Yellow text for high visibility
-  textSize(14); // Slightly smaller text for additional instructions
-  textAlign(CENTER); // Center-align the message
-  text(
-    "If you created a username and PIN before, please use them again.",
-    width / 2,
-    height - 150
-  );
-  text(
-    "If you forgot, create a new username and PIN. Keep a record for future use.",
-    width / 2,
-    height - 130
-  );
-
-  // Additional instruction for submitting
-  textSize(16); // Slightly larger text for pressing Enter
-  text("Press Enter to submit", width / 2, height - 70);
+  noLoop();
+  setBodyBackground("Processing/Flappy_pong/In_GameForm.jpg"); // Set background
+  removeDynamicElements(); // Clear any existing dynamic elements
+  createInputForm(); // Add input form
 }
 
-
-
-function createInputFields() {
+function createInputForm() {
   const gameContainer = document.getElementById("gameContainer");
-  if (gameContainer.querySelector("#usernameInput") && gameContainer.querySelector("#pinInput")) {
-    return; // Avoid recreating fields if they already exist
-  }
 
-  const canvasRect = gameContainer.querySelector("canvas").getBoundingClientRect();
+  // Clear existing elements in gameContainer
+  gameContainer.innerHTML = "";
 
-  // Username Input Field
+  // Create a form container
+  const formContainer = document.createElement("div");
+  formContainer.style.display = "flex";
+  formContainer.style.flexDirection = "column";
+  formContainer.style.alignItems = "center";
+  formContainer.style.justifyContent = "center";
+  formContainer.style.height = "100%";
+  formContainer.style.width = "100%";
+  formContainer.style.position = "absolute";
+  formContainer.style.zIndex = "20"; // Ensure it is above the canvas
+  formContainer.style.pointerEvents = "auto";
+
+  // Add title
+  const title = document.createElement("h1");
+  title.textContent = "Congratulations! Top 5 Score!";
+  title.style.color = "white";
+  title.style.textShadow = "3px 3px 7px rgba(0, 0, 0, 0.9)"; // Stronger shadow
+  title.style.fontWeight = "bold"; // Bold for emphasis
+  title.style.textAlign = "center";
+  title.style.fontSize = "36px"; // Increased font size
+  title.style.marginBottom = "15px"; // Adjust spacing below
+  title.style.marginTop = "-20px"; // Move the title slightly up
+  formContainer.appendChild(title);
+
+  // Add username input
   const usernameInput = document.createElement("input");
-  usernameInput.type = "text";
   usernameInput.id = "usernameInput";
+  usernameInput.type = "text";
   usernameInput.placeholder = "Enter your username";
-  usernameInput.style.position = "absolute";
-  usernameInput.style.left = `${canvasRect.left + canvasRect.width / 2 - 100}px`;
-  usernameInput.style.top = `${canvasRect.top + canvasRect.height / 2 - 100}px`; // Adjusted spacing
-  usernameInput.style.width = "200px";
-  usernameInput.style.textAlign = "center";
-  gameContainer.appendChild(usernameInput);
+  usernameInput.style.color = "#000";
+  usernameInput.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+  usernameInput.style.boxShadow = "0 0 5px rgba(0, 0, 0, 0.5)";
+  usernameInput.style.width = "80%";
+  usernameInput.style.padding = "10px";
+  usernameInput.style.marginBottom = "10px";
+  usernameInput.style.border = "1px solid #ccc";
+  usernameInput.style.borderRadius = "5px";
+  usernameInput.style.fontSize = "16px";
+  usernameInput.style.transition = "background-color 0.2s ease-in-out"; // Smooth hover effect
+  formContainer.appendChild(usernameInput);
 
-  // Username Error Field
-  const usernameErrorDiv = document.createElement("div");
-  usernameErrorDiv.id = "usernameErrorDiv";
-  usernameErrorDiv.style.position = "absolute";
-  usernameErrorDiv.style.left = `${canvasRect.left + canvasRect.width / 2 - 100}px`;
-  usernameErrorDiv.style.top = `${canvasRect.top + canvasRect.height / 2 - 65}px`; // Below the input field
-  usernameErrorDiv.style.width = "200px";
-  usernameErrorDiv.style.color = "red";
-  usernameErrorDiv.style.fontWeight = "bold";
-  usernameErrorDiv.style.fontSize = "14px";
-  usernameErrorDiv.style.textAlign = "center";
-  gameContainer.appendChild(usernameErrorDiv);
+  // Add username error element
+  const usernameError = document.createElement("div");
+  usernameError.id = "usernameError";
+  usernameError.style.color = "red";
+  usernameError.style.textShadow = "1px 1px 3px rgba(0, 0, 0, 0.7)";
+  usernameError.style.fontWeight = "bold";
+  usernameError.style.fontFamily = "Tahoma, Geneva, sans-serif"; // Font for error messages
+  usernameError.style.textAlign = "center";
+  usernameError.style.fontSize = "14px";
+  usernameError.style.marginBottom = "10px";
+  formContainer.appendChild(usernameError);
 
-  // PIN Input Field
+  // Add PIN input
   const pinInput = document.createElement("input");
-  pinInput.type = "password";
   pinInput.id = "pinInput";
+  pinInput.type = "password";
   pinInput.placeholder = "Enter your PIN";
-  pinInput.style.position = "absolute";
-  pinInput.style.left = `${canvasRect.left + canvasRect.width / 2 - 100}px`;
-  pinInput.style.top = `${canvasRect.top + canvasRect.height / 2 - 10}px`; // Adjusted spacing
-  pinInput.style.width = "200px";
-  pinInput.style.textAlign = "center";
-  gameContainer.appendChild(pinInput);
+  pinInput.style.color = "#000";
+  pinInput.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+  pinInput.style.boxShadow = "0 0 5px rgba(0, 0, 0, 0.5)";
+  pinInput.style.width = "80%";
+  pinInput.style.padding = "10px";
+  pinInput.style.marginBottom = "10px";
+  pinInput.style.border = "1px solid #ccc";
+  pinInput.style.borderRadius = "5px";
+  pinInput.style.fontSize = "16px";
+  pinInput.style.transition = "background-color 0.2s ease-in-out"; // Smooth hover effect
+  formContainer.appendChild(pinInput);
 
-  // PIN Error Field
-  const pinErrorDiv = document.createElement("div");
-  pinErrorDiv.id = "pinErrorDiv";
-  pinErrorDiv.style.position = "absolute";
-  pinErrorDiv.style.left = `${canvasRect.left + canvasRect.width / 2 - 100}px`;
-  pinErrorDiv.style.top = `${canvasRect.top + canvasRect.height / 2 + 25}px`; // Below the input field
-  pinErrorDiv.style.width = "200px";
-  pinErrorDiv.style.color = "red";
-  pinErrorDiv.style.fontWeight = "bold";
-  pinErrorDiv.style.fontSize = "14px";
-  pinErrorDiv.style.textAlign = "center";
-  gameContainer.appendChild(pinErrorDiv);
+  // Add PIN error element
+  const pinError = document.createElement("div");
+  pinError.id = "pinError";
+  pinError.style.color = "red";
+  pinError.style.textShadow = "1px 1px 3px rgba(0, 0, 0, 0.7)";
+  pinError.style.fontWeight = "bold";
+  pinError.style.fontFamily = "Tahoma, Geneva, sans-serif"; // Font for error messages
+  pinError.style.textAlign = "center";
+  pinError.style.fontSize = "14px";
+  pinError.style.marginBottom = "20px";
+  formContainer.appendChild(pinError);
 
-  usernameInput.addEventListener("input", (e) => (playerName = e.target.value));
-  pinInput.addEventListener("input", (e) => (playerPin = e.target.value));
+  // Add reminder text
+  const reminderText = document.createElement("p");
+  reminderText.innerHTML =
+    "If you created a username and PIN before, please use them again.<br>" +
+    "If you forgot, create a new username and PIN. Keep a record for future use.";
+  reminderText.style.color = "yellow"; // Changed to yellow for visibility
+  reminderText.style.textShadow = "1px 1px 3px rgba(0, 0, 0, 0.5)";
+  reminderText.style.fontWeight = "bold";
+  reminderText.style.textAlign = "center";
+  reminderText.style.fontSize = "14px";
+  reminderText.style.marginTop = "10px";
+  reminderText.style.lineHeight = "1.5";
+  formContainer.appendChild(reminderText);
+
+  // Add instructions for submitting
+  const instructions = document.createElement("p");
+  instructions.textContent = "Press Enter to submit.";
+  instructions.style.color = "yellow";
+  instructions.style.textShadow = "1px 1px 3px rgba(0, 0, 0, 0.7)";
+  instructions.style.fontWeight = "bold";
+  instructions.style.textAlign = "center";
+  instructions.style.fontSize = "16px";
+  instructions.style.marginTop = "20px";
+  formContainer.appendChild(instructions);
+
+  // Append form container to game container
+  gameContainer.appendChild(formContainer);
+
+  // Event Listeners for inputs
+  usernameInput.addEventListener("click", () => {
+    usernameInput.style.backgroundColor = "rgba(220, 220, 255, 0.8)"; // Light blue on focus
+    usernameInput.focus();
+  });
+  usernameInput.addEventListener("blur", () => {
+    usernameInput.style.backgroundColor = "rgba(255, 255, 255, 0.8)"; // Revert on blur
+  });
+
+  pinInput.addEventListener("click", () => {
+    pinInput.style.backgroundColor = "rgba(220, 220, 255, 0.8)"; // Light blue on focus
+    pinInput.focus();
+  });
+  pinInput.addEventListener("blur", () => {
+    pinInput.style.backgroundColor = "rgba(255, 255, 255, 0.8)"; // Revert on blur
+  });
+
+  usernameInput.addEventListener("input", (e) => {
+    playerName = e.target.value.replace(/[^a-zA-Z0-9]/g, ""); // Sanitize input
+    //console.log("Username updated:", playerName);
+  });
+
+  pinInput.addEventListener("input", (e) => {
+    playerPin = e.target.value.replace(/[^0-9]/g, ""); // Sanitize input
+    //console.log("PIN updated:", playerPin);
+  });
 }
 
 
@@ -791,31 +804,16 @@ function removeInputFields() {
 
 function removeDynamicElements() {
   const gameContainer = document.getElementById("gameContainer");
-  const titleElement = gameContainer.querySelector("#titleElement");
-  if (titleElement) {
-    titleElement.remove();
-  }
-
-  const usernameInput = gameContainer.querySelector("#usernameInput");
-  if (usernameInput) {
-    usernameInput.remove();
-  }
-
-  const pinInput = gameContainer.querySelector("#pinInput");
-  if (pinInput) {
-    pinInput.remove();
-  }
-
-  const errorMessages = gameContainer.querySelectorAll(".error-message");
-  errorMessages.forEach((error) => error.remove());
+  gameContainer.innerHTML = ""; // Clear all dynamic elements
 }
+
 
 function fetchTopScores(difficulty, playerScore) {
   const url = `https://api-project-3abl.onrender.com/api/scores/${difficulty}`;
   
   // If a previous fetch has already failed, return early
   if (fetchFailed) {
-    console.log("Skipping fetch due to previous failure.");
+    //console.log("Skipping fetch due to previous failure.");
     return Promise.resolve(false);
   }
   
@@ -837,15 +835,16 @@ function fetchTopScores(difficulty, playerScore) {
 
       // Check if the score qualifies for the top 5
       if (topScores.length < 5 || playerScore > topScores[topScores.length - 1].score) {
-        console.log("Score qualifies for top five!");
+        //console.log("Score qualifies for top five!");
         return true; // Indicates the score qualifies
       } else {
-        console.log("Score does NOT qualify for top five.");
+        //console.log("Score does NOT qualify for top five.");
         return false; // Indicates the score does not qualify
       }
     })
     .catch(error => {
-      console.error("Error fetching top scores:", error.message);
+      //console.error("Error fetching top scores:", error.message);
+      fetchFailed = true;
       throw error; // Ensure error propagates to `gameOver`
     });
 }
@@ -854,21 +853,18 @@ function setBodyBackground(imageUrl = "") {
   const gameContainer = document.getElementById("gameContainer");
 
   if (!gameContainer) {
-    console.error("Game container not found!");
+    //console.error("Game container not found!");
     return;
   }
 
-  if (imageUrl) {
-    // Set the background image for the game container
-    gameContainer.style.backgroundImage = `url(${imageUrl.canvas.toDataURL()})`;
-    gameContainer.style.backgroundSize = "100% 100%"; // Ensure image fits exactly
-    gameContainer.style.backgroundRepeat = "no-repeat"; // Prevent duplicates
-    gameContainer.style.backgroundPosition = "center center"; // Center the image
-
+  if (gameContainer.style.backgroundImage !== `url(${imageUrl})`) {
     // Match the canvas dimensions
     const canvasWidth = 500; // Game canvas width
     const canvasHeight = 500; // Game canvas height
-
+    
+    // Set the background image for the game container
+    gameContainer.style.backgroundImage = `url(${imageUrl})`;
+    
     // Set dimensions for the game container
     gameContainer.style.width = `${canvasWidth}px`;
     gameContainer.style.height = `${canvasHeight}px`;
@@ -876,6 +872,11 @@ function setBodyBackground(imageUrl = "") {
     gameContainer.style.margin = "0 auto"; // Center the container horizontally
     gameContainer.style.padding = "0";
     gameContainer.style.position = "relative";
+    
+    gameContainer.style.backgroundSize = "cover"; // Ensure image fits exactly
+    gameContainer.style.backgroundRepeat = "no-repeat"; // Prevent duplicates
+    gameContainer.style.backgroundPosition = "center center"; // Center the image
+
   } else {
     // Reset the styles for gameContainer
     gameContainer.style.backgroundImage = "";
@@ -891,56 +892,77 @@ function setBodyBackground(imageUrl = "") {
 
 function displayTopScoresScreen() {
   clear(); // Clear the canvas
+  setBodyBackground("Processing/Flappy_pong/form_highscore.jpg"); // Set the background image
 
-  // Set the glacier background for the top scores screen
-  setBodyBackground(form_highScoreImg);
+  // Title
+  textAlign(CENTER, TOP);
+  fill(255); // White text for the title
+  textSize(32);
+  textFont("Arial");
+  textStyle(BOLD);
+  text("Top 5 Scores", width / 2, 30);
 
-  // Remove any existing dynamic elements
-  removeDynamicElements();
+  // Check if `topScores` is available
+  if (!topScores || topScores.length === 0) {
+    textSize(20);
+    fill(255, 255, 0); // Yellow text
+    textStyle(BOLD);
+    text("No scores available.", width / 2, height / 2);
+    return;
+  }
 
-  // Create and style the title dynamically
-  const gameContainer = document.getElementById("gameContainer");
-  const titleElement = document.createElement("div");
-  titleElement.id = "topScoresTitle"; // Assign an ID for reference
-  titleElement.innerText = "Top 5 Scores";
-  titleElement.style.position = "absolute";
-  titleElement.style.top = "20px"; // Adjust this value for proper positioning
-  titleElement.style.left = "50%";
-  titleElement.style.transform = "translateX(-50%)"; // Center horizontally
-  titleElement.style.fontSize = "32px";
-  titleElement.style.fontWeight = "bold";
-  titleElement.style.color = "white";
-  titleElement.style.textShadow = "2px 2px 5px rgba(0, 0, 0, 0.8)"; // Dark shadow
-  titleElement.style.textAlign = "center";
-  titleElement.style.whiteSpace = "nowrap"; // Prevent wrapping
-  gameContainer.appendChild(titleElement);
+  // Subtle background box for scores
+  const rectWidth = 350; // Fixed width
+  const rectHeight = topScores.length * 40 + 30; // Dynamic height
+  const rectX = width / 2 - rectWidth / 2;
+  const rectY = 80; // Position below the title
+  fill(0, 0, 0, 80); // Black with light transparency
+  noStroke(); // Remove border
+  rect(rectX, rectY, rectWidth, rectHeight, 20); // Subtle rounded corners
 
-  // Display the scores
-  textAlign(CENTER);
-  textFont("monospace"); // Use monospace font for proper alignment
+  // Display scores
   textSize(20);
-  fill(255, 255, 0); // Yellow for high visibility
-  const startY = 100; // Starting Y-coordinate for the scores
-  const lineHeight = 40; // Space between lines
+  fill(255, 255, 0); // Yellow text
+  textFont("Arial");
+  textStyle(BOLD);
+
+  const startY = rectY + 15; // Starting y-coordinate
+  const lineHeight = 40; // Space between score lines
+  const rankX = rectX + 20; // Rank position
+  const nameX = rectX + 60; // Username position
+  const scoreX = rectX + rectWidth - 70; // Score position
 
   topScores.forEach((score, index) => {
-    // Format: "1. username           - score"
-    const formattedLine = `${(index + 1).toString().padEnd(3, " ")}${score.username.padEnd(20, " ")}- ${score.score}`;
-    text(formattedLine, width / 2, startY + index * lineHeight);
+    textAlign(LEFT);
+
+    // Truncate long usernames
+    const maxUsernameLength = 12;
+    const displayUsername =
+      score.username.length > maxUsernameLength
+        ? score.username.substring(0, maxUsernameLength - 3) + "..."
+        : score.username;
+
+    // Render rank, username, and score
+    text(`${index + 1}.`, rankX, startY + index * lineHeight); // Rank
+    text(displayUsername, nameX, startY + index * lineHeight); // Username
+    text(`${score.score}`, scoreX, startY + index * lineHeight); // Score
   });
 
-  // Restart Instruction
+  // Restart instructions
+  textAlign(CENTER, CENTER);
   textSize(16);
-  fill(255); // White text for restart instruction
-  textFont("Arial"); // Reset font for this part
+  fill(255); // White text
+  textFont("Arial");
+  textStyle(BOLD);
   text("Press R to Restart", width / 2, height - 40);
 }
+
 
 function displayConnectionErrorScreen() {
   clear(); // Clear the canvas
 
   // Set the background (if applicable)
-  setBodyBackground(ScoreImage);
+  setBodyBackground("Processing/Flappy_pong/Score_picture.png");
 
   textAlign(CENTER, CENTER);
 
@@ -1031,11 +1053,11 @@ function gameplayScreen() {
     healthBoost.checkCollection(ball);
 
     // Log each frame to confirm it’s being processed
-    console.log("Health boost is at:", healthBoost.x, healthBoost.y);
+    //console.log("Health boost is at:", healthBoost.x, healthBoost.y);
 
     // Remove the item if it's collected or off-screen
     if (healthBoost.collected || healthBoost.x + healthBoost.size < 0) {
-      console.log("Health boost collected or off-screen");
+      //console.log("Health boost collected or off-screen");
       healthBoost = null;  // Reset health boost so it can reappear if needed
     }
   }
@@ -1098,16 +1120,16 @@ async function gameOver() {
     const qualifies = await fetchTopScores(difficulty, score);
 
     if (qualifies) {
-      console.log("Score qualifies for top five! Redirecting to Top Score Entry Screen...");
+      //console.log("Score qualifies for top five! Redirecting to Top Score Entry Screen...");
       gameScreen = 3; // Move to the top-score entry screen
     } 
     else {
-      console.log("Score does NOT qualify. Staying on Game Over Screen...");
+      //console.log("Score does NOT qualify. Staying on Game Over Screen...");
       gameScreen = 2; // Stay on the regular game-over screen
     }
   } 
   catch (error) {
-    console.error("Error during gameOver:", error);
+    //console.error("Error during gameOver:", error);
     fetchFailed = true; // Mark the fetch as failed
     usernameError = "Unable to fetch top scores. Please check your connection.";
     gameScreen = 5; // Transition to connection error screen
@@ -1119,8 +1141,8 @@ async function gameOver() {
 
 
 function gameOverScreen() {
+  clear();
   removeInputFields(); // Remove any lingering input fields from the previous screen
-  removeDynamicElements(); // Remove dynamically added elements like titles
   
   imageMode(CORNER);
   image(ScoreImage, 0, 0, width, height);
@@ -1153,8 +1175,9 @@ function keyPressed() {
     startGame();
   } 
   else if ((gameScreen === 2 || gameScreen === 4 || gameScreen === 5) && key === 'r') {
+    clear();
     resetGame(); // Restart on 'R' press in game over screen
-    removeInputFields();
+    loop();
   } 
   else if (gameScreen === 3 && keyCode === ENTER) {
     submitTopScore(); // Submit top score
@@ -1165,7 +1188,7 @@ function keyPressed() {
         gameScreen = 4; // Switch to the Top Scores screen
       })
       .catch((error) => {
-        console.error("Error fetching top scores:", error);
+        //console.error("Error fetching top scores:", error);
       });
   }
 }
@@ -1184,7 +1207,5 @@ function resetGame() {
   fetchFailed = false; // Reset the fetch failure flag
   gameOverTriggered = false; // Reset game over trigger
   removeInputFields();
-  // Reset the background to the default
-  removeDynamicElements(); // Remove other dynamic elements, if any
   setBodyBackground("");
 }
